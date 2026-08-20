@@ -23,6 +23,8 @@ android/build/
 *.dll
 *.pdb
 BookPicks-发布包.zip
+BookPicks-windows.zip
+SHA256SUMS.txt
 
 # ---- Android 发布文件 ----
 *.apk
