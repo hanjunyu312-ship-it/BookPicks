@@ -69,5 +69,11 @@ Thumbs.db
 # ---- 项目中的个人资料归档（不上传，保留本地）----
 上传资料/
 
+# ---- 截图（未经隐私人工审核，严禁入库）----
+android/screen1.png
+android/screen2.png
+android/final_screen.png
+android/final_screen2.png
+
 # ---- 与本项目无关的其他项目（保留本地，不入库）----
 PianoCenter（钢琴教学）/

@@ -76,6 +76,8 @@ jobs:
           } finally {
             $zip.Dispose()
           }
+          Write-Host "APK entries ($($names.Count)):"
+          $names | ForEach-Object { Write-Host "  $_" }
           foreach ($req in @('classes.dex', 'assets/www/index.html', 'assets/www/app.js', 'assets/www/style.css')) {
             if ($names -notcontains $req) { throw "Missing required entry: $req" }
           }

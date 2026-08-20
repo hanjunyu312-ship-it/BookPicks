@@ -101,6 +101,11 @@ Copy-Item (Join-Path $srcRoot 'make-icon.ps1') $work -Force
 $build = Join-Path $work 'build'
 New-Item -ItemType Directory -Force $build | Out-Null
 
+# Debug: how many files were staged per input dir (helps diagnose CI gaps).
+Write-Host ("STAGED res    files: " + (Get-ChildItem (Join-Path $work 'res') -Recurse -File).Count)
+Write-Host ("STAGED src    files: " + (Get-ChildItem (Join-Path $work 'src') -Recurse -File).Count)
+Write-Host ("STAGED assets files: " + (Get-ChildItem (Join-Path $work 'assets') -Recurse -File).Count)
+
 try {
   # --------------------------------------------------------
   # 3. Icon resource (only if missing in the staged res)
@@ -180,6 +185,15 @@ try {
       $b2 = [System.IO.File]::ReadAllBytes($_.FullName)
       $s2.Write($b2, 0, $b2.Length)
       $s2.Close()
+    }
+    # Sanity check: every staged asset must be inside the apk.
+    $injected = @($zip.Entries | ForEach-Object { $_.FullName })
+    $stagedAssets = @(Get-ChildItem (Join-Path $work 'assets') -Recurse -File | ForEach-Object {
+      $_.FullName.Substring((Join-Path $work 'assets').Length + 1).Replace('\', '/')
+    })
+    $missing = @($stagedAssets | Where-Object { $injected -notcontains "assets/$_" })
+    if ($missing.Count -gt 0) {
+      throw "Asset injection incomplete. Missing: $($missing -join ', '). APK entries: $($injected -join ', ')"
     }
   } finally {
     $zip.Dispose()
