@@ -1,0 +1,73 @@
+# ============================================
+# BookPicks .gitignore
+# 构建产物、发布文件、签名材料与个人资料一律不进 Git。
+# ============================================
+
+# ---- .NET / Visual Studio ----
+bin/
+obj/
+.vs/
+*.user
+*.suo
+*.userosscache
+*.csproj.user
+
+# ---- 构建产物 / 发布目录 ----
+build/
+publish/
+publish-v*/
+android/build/
+
+# ---- Windows 发布文件 ----
+*.exe
+*.dll
+*.pdb
+BookPicks-发布包.zip
+
+# ---- Android 发布文件 ----
+*.apk
+*.aab
+*.idsig
+android/BookPicks.apk
+android/BookPicks.apk.idsig
+
+# ---- Android 签名材料（严禁提交，签名密钥丢失将导致无法覆盖升级）----
+*.keystore
+*.jks
+*.p12
+*.pfx
+*.pem
+android/signing.local.properties
+
+# ---- 本地配置与凭据 ----
+.env
+.env.*
+*.local
+local.properties
+secrets/
+credentials/
+
+# ---- 缓存 / 临时文件 ----
+cache/
+.cache/
+*.cache
+*.log
+*.tmp
+*.bak
+
+# ---- 本地翻译模型（个人下载，体积大，不入库）----
+models/
+translator/
+android/models/
+
+# ---- 操作系统与编辑器文件 ----
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# ---- 项目中的个人资料归档（不上传，保留本地）----
+上传资料/
+
+# ---- 与本项目无关的其他项目（保留本地，不入库）----
+PianoCenter（钢琴教学）/
