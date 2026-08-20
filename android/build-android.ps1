@@ -105,6 +105,13 @@ New-Item -ItemType Directory -Force $build | Out-Null
 Write-Host ("STAGED res    files: " + (Get-ChildItem (Join-Path $work 'res') -Recurse -File).Count)
 Write-Host ("STAGED src    files: " + (Get-ChildItem (Join-Path $work 'src') -Recurse -File).Count)
 Write-Host ("STAGED assets files: " + (Get-ChildItem (Join-Path $work 'assets') -Recurse -File).Count)
+# Diagnostics for CI asset-path issue: dump source + staged asset trees verbatim.
+Write-Host "DIAG srcRoot=[$srcRoot]"
+Write-Host "DIAG work=[$work]"
+Write-Host "DIAG source assets tree (after staging):"
+Get-ChildItem (Join-Path $srcRoot 'assets') -Recurse -Force | ForEach-Object { Write-Host ("  " + $_.FullName) }
+Write-Host "DIAG staged assets tree (after staging):"
+Get-ChildItem (Join-Path $work 'assets') -Recurse -Force | ForEach-Object { Write-Host ("  " + $_.FullName) }
 
 try {
   # --------------------------------------------------------
@@ -180,6 +187,7 @@ try {
     $es.Close()
     Get-ChildItem (Join-Path $work 'assets') -Recurse -File | ForEach-Object {
       $rel = $_.FullName.Substring((Join-Path $work 'assets').Length + 1).Replace('\', '/')
+      Write-Host ("DIAG inject file=[{0}] rel=[{1}]" -f $_.FullName, $rel)
       $e2 = $zip.CreateEntry("assets/$rel", [System.IO.Compression.CompressionLevel]::Optimal)
       $s2 = $e2.Open()
       $b2 = [System.IO.File]::ReadAllBytes($_.FullName)
