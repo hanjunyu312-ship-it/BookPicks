@@ -49,7 +49,7 @@ jobs:
           java-version: '17'
 
       - name: Setup Android SDK (build-tools 36.1.0 / android-36)
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
         with:
           packages: 'build-tools;36.1.0 platforms;android-36 platform-tools'
 
