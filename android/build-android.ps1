@@ -78,6 +78,11 @@ if (-not $tmpBase) { $tmpBase = 'C:\Windows\Temp' }
 $work = Join-Path $tmpBase 'bookpicks-android-build'
 if (Test-Path $work) { Remove-Item $work -Recurse -Force }
 New-Item -ItemType Directory -Force $work | Out-Null
+# Normalize to the long form: on GitHub runners $env:TEMP can be an 8.3 short
+# path (e.g. C:\Users\RUNNER~1\...), while Get-ChildItem returns long FullNames.
+# A short/long base mismatch shifts the Substring() rel-path math below, which
+# packed staged files under a bogus assets\ts\www\ instead of assets\www\.
+$work = (Get-Item $work).FullName
 
 function Stage-Dir([string]$rel) {
   # Copy $srcRoot\<rel> into $work\<rel>, preserving relative layout.
