@@ -1,0 +1,82 @@
+# BookPicks CI
+# Runs on every push / PR: Windows build, JS syntax checks and an
+# UNSIGNED Android build. Never touches the release keystore, and no
+# password / token / keystore content / local path is ever logged.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build & validate
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.x'
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Android SDK (build-tools 36.1.0 / android-36)
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'build-tools;36.1.0 platforms;android-36 platform-tools'
+
+      - name: JS syntax check (Windows frontend)
+        shell: pwsh
+        run: node --check www/app.js
+
+      - name: JS syntax check (Android frontend)
+        shell: pwsh
+        run: node --check android/assets/www/app.js
+
+      - name: dotnet restore
+        shell: pwsh
+        run: dotnet restore
+
+      - name: dotnet build (Release)
+        shell: pwsh
+        run: dotnet build -c Release --no-restore
+
+      - name: Android unsigned build (test APK, no keystore)
+        shell: pwsh
+        run: powershell -ExecutionPolicy Bypass -File android\build-android.ps1
+
+      - name: Verify unsigned APK contents
+        shell: pwsh
+        run: |
+          $apk = Join-Path $env:GITHUB_WORKSPACE 'android\BookPicks-unsigned.apk'
+          if (-not (Test-Path $apk)) { throw 'APK not produced' }
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $zip = [System.IO.Compression.ZipFile]::OpenRead($apk)
+          try {
+            $names = @($zip.Entries | ForEach-Object { $_.FullName })
+          } finally {
+            $zip.Dispose()
+          }
+          foreach ($req in @('classes.dex', 'assets/www/index.html', 'assets/www/app.js', 'assets/www/style.css')) {
+            if ($names -notcontains $req) { throw "Missing required entry: $req" }
+          }
+          Write-Host 'APK verified: classes.dex + assets/www/* present'
